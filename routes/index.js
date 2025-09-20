@@ -1,6 +1,6 @@
 import express from 'express'
 import adminRoutes from './Admin.routes.js';
-import ContactRoute from './contact.routes.js';
+import ContactRoute from './Contact.routes.js';
 import DcRoutes from './Dc.routes.js';
 import OrderRoutes from './EmitraStationery.routes.js';
 import FeedbackAndComplainRoutes from './FeedbackAndComplaint.routes.js';
@@ -11,6 +11,9 @@ import SeoRoutes from './Seo.router.js';
 import SliderRoutes from './Slider.routes.js';
 import ValidateReferenceRoute from './ValidateReference.router.js';
 import VideoRoute from './Video.router.js';
+import TestimonialRoute from './Testimonial.routes.js';
+import BlogRoute from './Blog.routes.js';
+import StationeryRateRoute from './StationeryRate.routes.js';
 const routes = express.Router();
 
 routes.use("/Admin",adminRoutes)
@@ -25,5 +28,8 @@ routes.use("/Seo",SeoRoutes,)
 routes.use("/Slider",SliderRoutes)
 routes.use("/Reference",ValidateReferenceRoute)
 routes.use("/Video",VideoRoute)
+routes.use("/Testimonial",TestimonialRoute)
+routes.use("/Blog",BlogRoute)
+routes.use("/StationeryRate",StationeryRateRoute)
 
 export default routes;
