@@ -1,6 +1,5 @@
 import express from 'express'
 import adminRoutes from './Admin.routes.js';
-import ContactRoute from './Contact.routes.js';
 import DcRoutes from './Dc.routes.js';
 import OrderRoutes from './EmitraStationery.routes.js';
 import FeedbackAndComplainRoutes from './FeedbackAndComplaint.routes.js';
@@ -14,6 +13,7 @@ import VideoRoute from './Video.router.js';
 import TestimonialRoute from './Testimonial.routes.js';
 import BlogRoute from './Blog.routes.js';
 import StationeryRateRoute from './StationeryRate.routes.js';
+import ContactRoute from './Contact.routes.js';
 const routes = express.Router();
 
 routes.use("/Admin",adminRoutes)
