@@ -29,7 +29,7 @@ routes.use("/Slider",SliderRoutes)
 routes.use("/Reference",ValidateReferenceRoute)
 routes.use("/Video",VideoRoute)
 routes.use("/Testimonial",TestimonialRoute)
-routes.use("/Blog",BlogRoute)
+routes.use("/blogs",BlogRoute)
 routes.use("/StationeryRate",StationeryRateRoute)
 
 export default routes;
