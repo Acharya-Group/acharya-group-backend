@@ -71,6 +71,19 @@ const getTestimonials = async (req, res) => {
     }
 };
 
+// 4️⃣ Get single testimonial by ID
+const getSingleTestimonial = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const testimonial = await Testimonial.findById(id);
+        if (!testimonial) return res.status(404).json({ error: "Testimonial not found" });
+
+        res.status(200).json({ message: "Testimonial fetched successfully", testimonial });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // 4️⃣ Delete a testimonial by ID
 const deleteTestimonial = async (req, res) => {
     try {
@@ -90,4 +103,4 @@ const deleteTestimonial = async (req, res) => {
     }
 };
 
-export { addTestimonial, updateTestimonial, getTestimonials, deleteTestimonial };
+export { addTestimonial,getSingleTestimonial, updateTestimonial, getTestimonials, deleteTestimonial };
