@@ -1,7 +1,8 @@
 import express from "express";
 import multer from "multer";
 import {
-  addImage,
+  createCategory,       // NEW
+  addImagesToCategory,  // MODIFIED
   updateImage,
   getGalleries,
   getSingleGallery,
@@ -16,11 +17,26 @@ const storage = multer.diskStorage({});
 const upload = multer({ storage });
 
 // Routes
-router.post("/", upload.array("images", 10), addImage); 
+
+// 1️⃣ Create category without images
+router.post("/create-category", createCategory);
+
+// 2️⃣ Add images to an existing category
+router.post("/add-images", upload.array("images", 10), addImagesToCategory);
+
+// 3️⃣ Update a specific image
 router.put("/:categoryId/image/:imageId", upload.single("image"), updateImage);
+
+// 4️⃣ Get all categories
 router.get("/", getGalleries);
+
+// 5️⃣ Get single category
 router.get("/:categoryId", getSingleGallery);
+
+// 6️⃣ Delete a specific image
 router.delete("/:categoryId/image/:imageId", deleteImage);
+
+// 7️⃣ Delete entire category
 router.delete("/:categoryId", deleteGallery);
 
 export default router;
