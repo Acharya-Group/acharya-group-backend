@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const stationeryItemSchema = new mongoose.Schema({
-  type: { type: String, required: true },
+  type: { type: String },
   quantity: { type: Number, required: true, min: 1 }
 });
 
