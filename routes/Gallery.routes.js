@@ -22,7 +22,7 @@ const upload = multer({ storage });
 router.post("/create-category", createCategory);
 
 // 2️⃣ Add images to an existing category
-router.post("/add-images", upload.array("images", 10), addImagesToCategory);
+router.post("/add-images", upload.array("images", 20), addImagesToCategory);
 
 // 3️⃣ Update a specific image
 router.put("/:categoryId/image/:imageId", upload.single("image"), updateImage);
