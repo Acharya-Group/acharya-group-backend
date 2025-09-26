@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const feedbackComplaintSchema = new mongoose.Schema(
   {
     name: { type: String },
-    number: { type: Number },
+    number: { type: String },
     district: { type: String },
     state: { type: String },
     formType: { type: String },
