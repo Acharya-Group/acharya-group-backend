@@ -8,16 +8,32 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+// ✅ CORS: allow frontend domains and localhost
+const allowedOrigins = [
+  "https://acharya-group.vercel.app",
+  "https://achariyagroup.in",
+  "http://localhost:3000",
+  "https://acharya-group-six.vercel.app"
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
-app.use(cors(
-  {
-    origin: ["https://acharya-group.vercel.app","https://achariyagroup.in","http://localhost:3000","https://acharya-group-six.vercel.app"],
-    credentials: true, 
-  }
-));
 app.use(express.urlencoded({ extended: true }));
+
+// ✅ API routes
 app.use("/api/v1", routes);
+
+// ✅ Connect database
 ConnectDb();
+
+// ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🚀 App listening on port ${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

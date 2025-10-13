@@ -14,6 +14,7 @@ import TestimonialRoute from './Testimonial.routes.js';
 import BlogRoute from './Blog.routes.js';
 import StationeryRateRoute from './StationeryRate.routes.js';
 import ContactRoute from './Contact.routes.js';
+import PaymentRoute from './payment.routes.js';
 const routes = express.Router();
 
 routes.use("/Admin",adminRoutes)
@@ -31,5 +32,6 @@ routes.use("/Video",VideoRoute)
 routes.use("/Testimonial",TestimonialRoute)
 routes.use("/blogs",BlogRoute)
 routes.use("/StationeryRate",StationeryRateRoute)
+routes.use("/Payment", PaymentRoute);
 
 export default routes;

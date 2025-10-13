@@ -1,15 +1,42 @@
 import Order from "../models/EmitraStationery.js";
 
-// ✅ Create Order
+// ✅ Create a new order
 const createOrder = async (req, res) => {
   try {
-    const order = new Order(req.body);
-    const saveOrder = await order.save();
+    const {
+      name,
+      phoneNo,
+      kioskId,
+      address,
+      pinCode,
+      items,
+      amount, 
+      transactionId,
+      paymentStatus,
+    } = req.body;
+
+    if (!amount || !name || !phoneNo || !kioskId || !address || !pinCode) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const order = new Order({
+      name,
+      phoneNo,
+      kioskId,
+      address,
+      pinCode,
+      items,
+      amount,
+      transactionId: transactionId || null,
+      paymentStatus: paymentStatus || "pending",
+    });
+
+    const savedOrder = await order.save();
 
     res.status(201).json({
       success: true,
       message: "Order created successfully",
-      data: saveOrder,
+      data: savedOrder,
     });
   } catch (error) {
     res.status(500).json({
@@ -19,25 +46,18 @@ const createOrder = async (req, res) => {
   }
 };
 
-// ✅ Update Order (can update status or any field)
+// ✅ Update order (status, payment, amount, or any field)
 const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
-      req.body, 
-      {
-        new: true,          
-        runValidators: true
-      }
-    );
+    const updatedOrder = await Order.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedOrder) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
 
     res.status(200).json({
@@ -50,65 +70,46 @@ const updateOrder = async (req, res) => {
   }
 };
 
-
-// ✅ Get All Orders
+// ✅ Get all orders
 const allOrders = async (req, res) => {
   try {
-    const orders = await Order.find();
-    res.status(200).json({
-      success: true,
-      message: "Orders fetched successfully",
-      data: orders,
-    });
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, message: "Orders fetched successfully", data: orders });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-// ✅ Get Single Order by ID
+// ✅ Get single order by ID
 const getSingleOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const order = await Order.findById(id);
 
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Order fetched successfully",
-      data: order,
-    });
+    res.status(200).json({ success: true, message: "Order fetched successfully", data: order });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-// ✅ Delete Order
+// ✅ Delete order
 const deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedOrder = await Order.findByIdAndDelete(id);
 
     if (!deletedOrder) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Order deleted successfully",
-      data: deletedOrder,
-    });
+    res.status(200).json({ success: true, message: "Order deleted successfully", data: deletedOrder });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-export { createOrder, allOrders, getSingleOrder, deleteOrder ,updateOrder };
+export { createOrder, updateOrder, allOrders, getSingleOrder, deleteOrder };
