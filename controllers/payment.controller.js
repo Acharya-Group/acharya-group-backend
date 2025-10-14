@@ -1,82 +1,98 @@
 import crypto from "crypto";
 import Order from "../models/EmitraStationery.js";
 
-const { PAYU_MERCHANT_KEY, PAYU_MERCHANT_SALT, PAYU_BASE_URL, FRONTEND_URL } = process.env;
+const {
+  PAYU_MERCHANT_KEY,
+  PAYU_MERCHANT_SALT,
+  PAYU_BASE_URL,
+  NEXT_PUBLIC_FRONTEND_URL,
+} = process.env;
 
-// ✅ Step 1: Initiate Payment
+const FRONTEND_URL = NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+
+// ✅ Initiate Payment
 export const initiatePayment = async (req, res) => {
   try {
     const { orderId } = req.body;
 
-    if (!orderId) {
+    if (!orderId)
       return res.status(400).json({ success: false, message: "Missing orderId" });
-    }
 
-    // Fetch order from DB
     const order = await Order.findById(orderId);
-    if (!order) {
+    if (!order)
       return res.status(404).json({ success: false, message: "Order not found" });
-    }
 
-    const { name, phoneNo, totalAmount } = order;
+    const { name, phoneNo, amount } = order;
     const email = order.email || "default@example.com";
-
     const txnid = "TXN" + Date.now();
+    const productinfo = "Stationery Order";
 
-    // Generate hash
-    const hashString = `${PAYU_MERCHANT_KEY}|${txnid}|${totalAmount}|Stationery Order|${name}|${email}|||||||||||${PAYU_MERCHANT_SALT}`;
+    const hashString = `${PAYU_MERCHANT_KEY}|${txnid}|${amount}|${productinfo}|${name}|${email}|||||||||||${PAYU_MERCHANT_SALT}`;
     const hash = crypto.createHash("sha512").update(hashString).digest("hex");
 
-    // Return payment data
-   res.json({
-  success: true,
-  paymentUrl: `${PAYU_BASE_URL}/_payment`,
-  payload: {
-    key: PAYU_MERCHANT_KEY,
-    txnid,
-    amount: totalAmount || 0,
-    productinfo: "Stationery Order",
-    firstname: name || "",
-    email: email || "default@example.com",
-    phone: phoneNo || "",
-    surl: `${FRONTEND_URL}/payment-success`,
-    furl: `${FRONTEND_URL}/payment-failed`,
-    hash: hash || "",
-    orderId,
-  },
-});
-
-  } catch (err) {
-    console.error("Initiate Payment Error:", err);
-    res.status(500).json({ success: false, message: err.message });
+    return res.status(200).json({
+      success: true,
+      data: {
+        action: `${PAYU_BASE_URL}/_payment`,
+        key: PAYU_MERCHANT_KEY,
+        txnid,
+        amount,
+        productinfo,
+        firstname: name,
+        email,
+        phone: phoneNo,
+        surl: `${FRONTEND_URL}/payment-success?orderId=${orderId}&txnid=${txnid}`,
+        furl: `${FRONTEND_URL}/payment-failed?orderId=${orderId}&txnid=${txnid}`,
+        hash,
+        orderId,
+      },
+    });
+  } catch (error) {
+    console.error("Initiate Payment Error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// ✅ Step 2: PayU Payment Callback
+// ✅ PayU Callback
 export const payuCallback = async (req, res) => {
   try {
-    const { status, txnid, amount, hash, mihpayid, email, productinfo, firstname, orderId } = req.body;
+    const {
+      status,
+      txnid,
+      amount,
+      hash,
+      mihpayid,
+      email,
+      productinfo,
+      firstname,
+      orderId,
+    } = req.body;
 
-    // Optional: verify hash if needed
+    if (!orderId) return res.status(400).send("Order ID missing");
+
     const hashString = `${PAYU_MERCHANT_SALT}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${PAYU_MERCHANT_KEY}`;
     const calculatedHash = crypto.createHash("sha512").update(hashString).digest("hex");
 
-    if (hash !== calculatedHash) {
-      return res.status(400).json({ success: false, message: "Invalid hash" });
-    }
+    if (hash !== calculatedHash) return res.status(400).send("Invalid hash");
 
-    // ✅ Update only transactionId and paymentStatus
     const paymentStatus = status === "success" ? "success" : "failed";
 
-    await Order.findByIdAndUpdate(orderId, {
-      transactionId: mihpayid,
-      paymentStatus,
-    });
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { transactionId: mihpayid || txnid, paymentStatus },
+      { new: true }
+    );
 
-    // Redirect to frontend with only the needed info
-    res.redirect(`${FRONTEND_URL}/payment-status?status=${paymentStatus}&txnid=${txnid}`);
+    if (!updatedOrder) return res.status(404).send("Order not found");
+
+    // Always include txnid in redirect
+    return res.redirect(
+      paymentStatus === "success"
+        ? `${FRONTEND_URL}/payment-success?orderId=${orderId}&txnid=${mihpayid || txnid}`
+        : `${FRONTEND_URL}/payment-failed?orderId=${orderId}&txnid=${mihpayid || txnid}`
+    );
   } catch (err) {
     console.error("PayU Callback Error:", err);
-    res.status(500).json({ success: false, message: err.message });
+    return res.status(500).send(err.message);
   }
 };
