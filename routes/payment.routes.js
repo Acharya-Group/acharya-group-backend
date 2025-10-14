@@ -4,6 +4,6 @@ import { initiatePayment, payuCallback } from "../controllers/payment.controller
 const PaymentRoute = express.Router();
 
 PaymentRoute.post("/initiate", initiatePayment);
-PaymentRoute.post("/verify", payuCallback);
+PaymentRoute.post("/verify/:txnid", payuCallback);
 
 export default PaymentRoute;

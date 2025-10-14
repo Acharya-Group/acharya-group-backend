@@ -14,13 +14,10 @@ const FRONTEND_URL = NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 export const initiatePayment = async (req, res) => {
   try {
     const { orderId } = req.body;
-
-    if (!orderId)
-      return res.status(400).json({ success: false, message: "Missing orderId" });
+    if (!orderId) return res.status(400).json({ success: false, message: "Missing orderId" });
 
     const order = await Order.findById(orderId);
-    if (!order)
-      return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
     const { name, phoneNo, amount } = order;
     const email = order.email || "default@example.com";
@@ -56,18 +53,19 @@ export const initiatePayment = async (req, res) => {
 // ✅ PayU Callback
 export const payuCallback = async (req, res) => {
   try {
+    const txnidParam = req.params.txnid;
     const {
       status,
-      txnid,
+      txnid: txnidBody,
       amount,
       hash,
       mihpayid,
       email,
       productinfo,
-      firstname,
       orderId,
     } = req.body;
 
+    const txnid = txnidParam || txnidBody;
     if (!orderId) return res.status(400).send("Order ID missing");
 
     const hashString = `${PAYU_MERCHANT_SALT}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${PAYU_MERCHANT_KEY}`;
@@ -85,12 +83,17 @@ export const payuCallback = async (req, res) => {
 
     if (!updatedOrder) return res.status(404).send("Order not found");
 
-    // Always include txnid in redirect
-    return res.redirect(
+    // ✅ Safe redirect with fallback
+    const redirectOrderId = orderId || "unknown";
+    const redirectTxnId = mihpayid || txnid || "unknown";
+
+    const redirectUrl =
       paymentStatus === "success"
-        ? `${FRONTEND_URL}/payment-success?orderId=${orderId}&txnid=${mihpayid || txnid}`
-        : `${FRONTEND_URL}/payment-failed?orderId=${orderId}&txnid=${mihpayid || txnid}`
-    );
+        ? `${FRONTEND_URL}/payment-success?orderId=${redirectOrderId}&txnid=${redirectTxnId}`
+        : `${FRONTEND_URL}/payment-failed?orderId=${redirectOrderId}&txnid=${redirectTxnId}`;
+
+    console.log("➡️ Redirecting to:", redirectUrl);
+    return res.redirect(redirectUrl);
   } catch (err) {
     console.error("PayU Callback Error:", err);
     return res.status(500).send(err.message);
