@@ -6,10 +6,11 @@ const {
   PAYU_MERCHANT_SALT,
   PAYU_BASE_URL,
   NEXT_PUBLIC_FRONTEND_URL,
+  NEXT_PUBLIC_BACKEND_URL,
 } = process.env;
 
 const FRONTEND_URL = NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
-const BACKEND_URL = "http://localhost:4000";
+const BACKEND_URL = NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 
 // ✅ Initiate Payment
 export const initiatePayment = async (req, res) => {
