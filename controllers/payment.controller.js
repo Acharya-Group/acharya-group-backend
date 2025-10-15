@@ -9,6 +9,7 @@ const {
 } = process.env;
 
 const FRONTEND_URL = NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+const BACKEND_URL = "http://localhost:4000";
 
 // ✅ Initiate Payment
 export const initiatePayment = async (req, res) => {
@@ -27,6 +28,12 @@ export const initiatePayment = async (req, res) => {
     const hashString = `${PAYU_MERCHANT_KEY}|${txnid}|${amount}|${productinfo}|${name}|${email}|||||||||||${PAYU_MERCHANT_SALT}`;
     const hash = crypto.createHash("sha512").update(hashString).digest("hex");
 
+                await Order.findByIdAndUpdate(orderId,{
+                  $set:{
+                  transactionId:txnid
+                  }
+                });
+
     return res.status(200).json({
       success: true,
       data: {
@@ -38,8 +45,8 @@ export const initiatePayment = async (req, res) => {
         firstname: name,
         email,
         phone: phoneNo,
-        surl: `${FRONTEND_URL}/payment-success?orderId=${orderId}&txnid=${txnid}`,
-        furl: `${FRONTEND_URL}/payment-failed?orderId=${orderId}&txnid=${txnid}`,
+        surl: `${BACKEND_URL}/api/v1/Payment/payment-success?orderId=${orderId}&txnid=${txnid}`,
+        furl: `${BACKEND_URL}/api/v1/Payment/payment-failed?orderId=${orderId}&txnid=${txnid}`,
         hash,
         orderId,
       },
@@ -99,3 +106,25 @@ export const payuCallback = async (req, res) => {
     return res.status(500).send(err.message);
   }
 };
+
+
+export const payuSuccess=async(req,res)=>{
+  const {orderId,txnid} = req.query
+  await Order.findOneAndUpdate({
+    transactionId:txnid
+  },{
+    paymentStatus:"success"
+  })
+  res.redirect(`${FRONTEND_URL}/payment-success?orderId=${orderId}&txnid=${txnid}`)
+}
+
+
+export const payuFailed=async(req,res)=>{
+  const {orderId,txnid} = req.query
+    await Order.findOneAndUpdate({
+    transactionId:txnid
+  },{
+    paymentStatus:"failed"
+  })
+  res.redirect(`${FRONTEND_URL}/payment-failed?orderId=${orderId}&txnid=${txnid}`)
+}

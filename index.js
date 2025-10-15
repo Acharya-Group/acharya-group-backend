@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import ConnectDb from "./config/db.js";
 import routes from "./routes/index.js";
-
+import morgan from 'morgan'
 dotenv.config();
 
 const app = express();
@@ -26,6 +26,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"))
 
 // ✅ API routes
 app.use("/api/v1", routes);

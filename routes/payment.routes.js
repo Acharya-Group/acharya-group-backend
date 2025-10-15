@@ -1,9 +1,11 @@
 import express from "express";
-import { initiatePayment, payuCallback } from "../controllers/payment.controller.js";
+import { initiatePayment, payuCallback, payuSuccess, payuFailed } from "../controllers/payment.controller.js";
 
-const PaymentRoute = express.Router();
+const router = express.Router();
 
-PaymentRoute.post("/initiate", initiatePayment);
-PaymentRoute.post("/verify/:txnid", payuCallback);
+router.post("/initiate", initiatePayment);
+router.post("/verify/:txnid", payuCallback);
+router.post("/payment-success", payuSuccess);
+router.post("/payment-failed", payuFailed);
 
-export default PaymentRoute;
+export default router;
