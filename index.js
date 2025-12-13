@@ -13,7 +13,9 @@ const PORT = process.env.PORT || 4000;
 const allowedOrigins = [
   "https://acharya-group.vercel.app",
   "https://achariyagroup.in",
+  "http://achariyagroup.in",
   "http://localhost:3000",
+  "http://localhost:3001",
   "https://acharya-group-six.vercel.app"
 ];
 
